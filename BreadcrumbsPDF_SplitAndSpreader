@@ -10,14 +10,12 @@ from tkinter import filedialog, simpledialog, messagebox, ttk, IntVar, StringVar
 from PyPDF2 import PdfReader, PdfWriter, PdfMerger                     #Untuk split pdf
 
 from datetime import datetime                               #Untuk memanggil tanggal dan waktu
-#using datetime without import module
 
 waktu = datetime.now()
 waktusplit = waktu.strftime("%Y-%b-%d-%a-%I-%M%p")
 tanggaldib = waktu.strftime("%Y %b-%d-%a (%I:%M%p)")
-DateVer = ("Oct-02")
+DateVer = ("10-04")
 
-#def SetTabel():
 #Membuat setting tabel
 font_Title = Font(name='Arial', size=15, bold=True, italic = False, underline='none', color='FF000000')
 font_Header = Font(name='Arial', size=11, bold=True, italic = False, underline='none', color='FF000000')
@@ -32,7 +30,8 @@ alignment = Alignment(horizontal='center',
                     wrap_text=False,
                     shrink_to_fit=False,
                     indent=0, )
-#    return font_Title, font_Data, border, alignment
+
+inputlist_file = None
 
 def BuatList():
     wb = Workbook()
@@ -65,7 +64,6 @@ def BuatList():
     for column, width in column_widths.items():
         ws.column_dimensions[column].width = width
 
-
     for row in ws["B1:J1"]: #Membuat Setting judul dok
         for cell in row:
             cell.font = font_Title
@@ -86,12 +84,8 @@ def BuatList():
     ws.merge_cells("I4:I5") ;ws.merge_cells("J4:J5")
     return wb, ws
 
-
-global dir
-
 #Setting baris data memiliki garis, center dan jenis huruf
 def setrow_data(x, ws, font_Data, border, alignment):
-    #print("x :",x)
     for row in ws[x]:
         for cell in row:
             cell.font = font_Data
@@ -137,6 +131,9 @@ except tk.TclError:
 
 ###  DEFINE FUNCTION SPLIT TAB   ###
 
+
+
+
 #Memasukkan file pdf
 def input_address():
     global inputfile_address
@@ -148,7 +145,6 @@ def input_address():
     inputfileaddress1 = inputfile_address.split(sep="/")  #Mengubah inputfile_address menjadi list
     inputfileaddress1=inputfileaddress1[:-1]                        #Menghilangkan nama file dari inputan (elemen list terakhir)
     outputfile_address="/".join(inputfileaddress1)                   #Menggabungkan elemen list menggunakan "/"
-    #outputfile_address=inputan+"/"                          #Menambah karakter "/" di akhir alamat output
 
 def bukahasil():
     dirf = os.path.realpath(dir)
@@ -156,10 +152,8 @@ def bukahasil():
     dird = os.path.realpath(outputfile_address)
     os.startfile(dird)
 
-
 def gabungpdf(file1, file2, output_file):
     pdf_merger = PdfMerger()
-
     with open(file1, "rb") as f1, open(file2, "rb") as f2:
         pdf_merger.append(f1)
         pdf_merger.append(f2)
@@ -173,7 +167,6 @@ def split_page(page_range,pages,no,progress,jendok,art, ws):
 
     for page_num, page in enumerate(reader.pages, 1):
         if page_num in page_range:
-            #print("eksekusi page_num ",page_num)
             writer.add_page(page)
 
     with open(f'{inputfile_address}_page_{pages[0]}-{pages[1]}.pdf', 'wb') as out:
@@ -184,7 +177,6 @@ def split_page(page_range,pages,no,progress,jendok,art, ws):
     
     #Merubah nama file pdf yang telah displit
     old_file = os.path.join(f'{inputfile_address}_page_{pages[0]}-{pages[1]}.pdf')
-    print("old file : ",old_file)
 
     hal = str(pages[0]) +" - "+str(pages[1])
     namafiledanprogress = "("+progress+"%) Masukkan nama File : "
@@ -198,22 +190,16 @@ def split_page(page_range,pages,no,progress,jendok,art, ws):
     if jendok == "Master Data":
         inputan = noDe.split("-",2)
         try:
-            #print(inputan[2])
             new_node = inputan[0] + "-" + inputan[1]
             new_gno = inputan[2]
-            #print('test')
         except Exception as err:
-            #print(inputan[1])
             new_node = inputan[0]
             new_gno = inputan[1]
-            #print('order')
         file_output = str(outputfile_address)+"/"+str(noDe)
-        #print("file_output ",file_output)
         
         new_file = os.path.join(file_output+".pdf")
         dupnew_file = os.path.join(file_output+"(Versi lama)"+waktusplit+".pdf")
 
-        #Terjadi Masalah kalau nama file sudah ada (tidak bisa duplikat)
         try:
             cekfilesplit = os.path.exists(new_file)        #cek existing file tujuan        
             os.rename(new_file, dupnew_file)                #Me-Rename file existing menjadi ditambah "Versi lama"
@@ -221,7 +207,6 @@ def split_page(page_range,pages,no,progress,jendok,art, ws):
             messagebox.showinfo('Splitter', f'File '+new_node+"-"+new_gno+' diduplikat')
 
         except Exception as e:
-            #print(e) 
             os.rename(old_file, new_file)
         node = str(new_node)
         if art == "New":
@@ -250,7 +235,6 @@ def split_page(page_range,pages,no,progress,jendok,art, ws):
 
         except Exception as e:
             #jika nama file baru hasil split tidak ada maka file hasil ouput langsung dipindah dan rename
-            #print(e) 
             os.rename(old_file, new_file)
 
 
@@ -263,6 +247,7 @@ def split_page(page_range,pages,no,progress,jendok,art, ws):
 def split():
     global reader
     global writer
+    global dir
     wb, ws = BuatList()
 
     choicehal  = int(jumlah_halartikel.get())
@@ -293,7 +278,6 @@ def split():
         reader = PdfReader(inputfile_address)
         #Menulis file pdf
         writer = PdfWriter()
-        #print("next split page!!")
         split_page(page_range,pages,no,progress, jendok, art, ws)
     #Setting baris data memiliki garis, center dan jenis huruf
     jumlah_data = 7+jumlahbaris
@@ -301,9 +285,6 @@ def split():
     ws = setrow_data(baris, ws, font_Data, border, alignment)
     garing= "/"
     # Menentukan nama list file berdasarkan waktu split
-
-
-
     waktu = datetime.now()
     waktusplit = waktu.strftime("%Y-%b-%d-%a-%I-%M%p")
     nama_file = f"{waktusplit} List {choicehal}-Hal .xlsx"
@@ -311,6 +292,12 @@ def split():
 
     wb.save(dir)  
     messagebox.showinfo('Splitter', f'Split File Selesai.')
+
+"""
+    if masterdata.get() == "None" :
+        messagebox.showerror("Error", "Jenis master data belum dipilih.")
+        resetdataSpred = hapusMSplit()
+"""
 
 def hapusMSplit():
     #Update label agar terlihat kosong
@@ -377,15 +364,10 @@ RegForm_inp = tk.Radiobutton(jenisdok_frame, text='Registration Form', value='Li
 
 #Mebuat label nama dan menempatkannya di root
 hapusmasukan_btn = tk.Button(Split, text='Reset Masukan',font=('Arial 12 bold'))
-#hapusmasukan = tk.Label(Split, text='',anchor='e', justify='left')
-
 #Mebuat label nama dan menempatkannya di root
 Mulaisplit_btn = tk.Button(Split, text='Split File',font=('Arial 12 bold'))
-#finishSplit = tk.Label(Split, text='',anchor='e', justify='left')
-
 #Mebuat label nama dan menempatkannya di root
 Bukahasil_btn = tk.Button(Split, text='Buka Output',font=('Arial 12 bold'))
-#finishBuka = tk.Label(Split, text='',anchor='e', justify='right')
 
 #menempatkan radiobutton yes dan no
 jumlah_halartikel_label.grid(row=8, column=0, columnspan=5, sticky=tk.W)
@@ -409,7 +391,6 @@ MDG_inp.pack(fill='none' ,ipadx=10, ipady=5, side='left')
 MDF_inp.pack(fill='none' ,ipadx=10, ipady=5, side='left')
 RegForm_inp.pack(fill='none', ipadx=0, ipady=5, side='left')
 
-
 labelkosong_bar14 = tk.Label(Split, text = ' ') 
 labelkosong_bar14.grid(row=14, column=0)
 
@@ -426,8 +407,6 @@ inputfile_btn.configure(command=input_address)
 hapusmasukan_btn.configure(command=hapusMSplit)
 Mulaisplit_btn.configure(command=split)
 Bukahasil_btn.configure(command=bukahasil)
-
-
 
 
 ###  DEFINE FUNCTION SPREAD TAB   ###
@@ -454,22 +433,17 @@ a = ydt()
 
 print (a)"""
 
-
 def spreadit(altu,input_alamatasal,nodesain,gnu):
     waktu = datetime.now()
     waktuspread = waktu.strftime("-%b-%d-%I-%M%p")
-    
-    folder= "/"+nodesain                #alamat folder
-    file= "/"+nodesain+"-"+gnu+".pdf"            #nama file asal
-    #fileNew= "/"+nodesain+"-"+gnu+"_New"+".pdf"  #nama file jika berubah jadi new
-    fileExist= "/"+nodesain+"-"+gnu+" (Versi lama)"+waktuspread+".pdf"  #nama file jika berubah jadi new
+    nodesain = int(round(nodesain, 0))
+    folder= "/"+str(nodesain)                #alamat folder
+    file= "/"+str(nodesain) +"-"+gnu+".pdf"            #nama file asal
+    fileExist= "/"+str(nodesain) +"-"+gnu+" (Versi lama)"+waktuspread+".pdf"  #nama file jika berubah jadi new
 
-
-    #fromdir = nodesain+file                    #alamat dan nama file asal
     fromdir = input_alamatasal+file                    #alamat dan nama file asal
     todir = altu+folder                    #alamat tujuan
     tofile = altu+folder+file              #alamat tujuan + file tanpa rename new
-    #tofilenew = altu+folder+fileNew        #alamat tujuan + file rename new
     tofileexist = altu+folder+fileExist        #alamat tujuan + file rename old
     
     cekdir = os.path.exists(todir)          #cek existing alamat tujuan
@@ -477,30 +451,22 @@ def spreadit(altu,input_alamatasal,nodesain,gnu):
     #cek direktori
     if cekdir == True:
         #jika folder ada maka simpan, try lagi untuk cek file
-        #print ("Folder ada")
         #cek file
         if cekfile == True:
-            #print("file MDG ada")
             try:
                 # Merename file lama
                 shutil.move(tofile,tofileexist)
-                #print("File MDG lama telah diupdate")
                 #memindah file                
                 shutil.move(fromdir,tofile)
-                #print("File MDG baru telah dipindah")
                 messagebox.showinfo('Spreader', f'Versi File '+file+' telah diupdate')
             except Exception as err:
-                #print("e :",err)
                 messagebox.showinfo('Spreader', f'File '+file+' yang akan dipindah tidak ada')
         #jika tidak ada maka rename file ditambah new lalu pindah
         #jika file tidak ada maka dipindah
         else: #tested
-            #print("file tujuan tidak ada")
             try:
                 #memindah file
                 shutil.move(fromdir,tofile)
-                #print("file yang akan dipindah ada")
-                #print("File telah dipindah")
             except Exception as err:
                 messagebox.showinfo('Spreader', f'File '+file+' yang akan dipindah tidak ada')
 
@@ -517,18 +483,13 @@ def spreadit(altu,input_alamatasal,nodesain,gnu):
             messagebox.showinfo('Spreader', f'File '+file+' yang akan dipindah tidak ada')
 
 def TruSpread():    
-    print("get",masterdata.get())
     inputlist_file
-    print("inputlist_file",inputlist_file)
-
     if masterdata.get() == "None" :
         messagebox.showerror("Error", "Jenis master data belum dipilih.")
         resetdataSpred = hapusMSpread()
-        print("get",masterdata.get())
     elif not masterdata.get():
         messagebox.showerror("Error", "Jenis master data belum dipilih.")
         resetdataSpred = hapusMSpread()
-        print("not get",masterdata.get())
 
     else:
         choiceMD  = masterdata.get()
@@ -546,11 +507,9 @@ def TruSpread():
             global maxrow
             df = pd.read_excel(inputlist_file, header=3,engine="openpyxl")    
             maxrow = len(df)
-            #print ('masterdata : ', choiceMD)
             for row in range(1, maxrow):
-                nodesain = str(df.loc[row,"NO. DESAIN"])
+                nodesain = df.loc[row,"NO. DESAIN"]
                 gnu = str(df.loc[row,"G/F-NO."])
-                #print("no desain:"+str(nodesain)+"-"+str(gnu))
                 spreadit(altu,input_alamatasal,nodesain,gnu)
             messagebox.showinfo('Spreader', f'Spread File '+md+' Selesai.')
 
@@ -564,9 +523,6 @@ def hapusMSpread():
     masterdata.set(None)
     inputlist_file = input_alamatasal = None
     messagebox.showinfo("Informasi","Data Input sudah dikosongkan, silahkan isi kembali.")
-    print("reset")
-
-inputlist_file = None
 
 ### TAB SPREAD ###
 
@@ -604,7 +560,6 @@ MDF_inp.pack(fill='none', ipadx=11, ipady=5, side='left')
 
 #menempatkan label nama di baris 1 kolom 0 dan inputnya
 HapusSpread_btn.grid(row=6, column=0)
-
 #menempatkan label nama di baris 1 kolom 0 dan inputnya
 MulaiSPREAD_btn.grid(row=6, column=2)
 
@@ -613,6 +568,11 @@ HapusSpread_btn.configure(command=hapusMSpread)
 MulaiSPREAD_btn.configure(command=TruSpread)
 
 ###  DEFINE FUNCTION Distribusi TAB   ###
+def bukadib():
+    dirf = os.path.realpath(dir)
+    os.startfile(dirf)
+    dird = os.path.realpath(outputlist_address)
+    os.startfile(dird)
 
 def output_list(): #Memasukkan alamat output file hasil sortir
     global outputlist_address
@@ -626,9 +586,9 @@ def select_files(): #Menghimpun file output yang akan dicombine dan sortir
         file_listbox.insert(tk.END, file_path)
 
 def Sortir(): #Menyatukan alamat file list yang telah dihimpun ke dalam satu list
+    global dir
     masterdatalist_inp  = str(masterdatalist.get())
     wb, ws = BuatList()
-    #ws.column_dimensions("H").width = 0
 
     ws["B1"] = masterdatalist_inp
     for row in ws["B1:J1"]: #Membuat Setting judul dok
@@ -648,45 +608,33 @@ def Sortir(): #Menyatukan alamat file list yang telah dihimpun ke dalam satu lis
     for file in files: #Membaca data dalam file excel dan menghimpun data nya ke dadalam dataframe
         if os.path.exists(file):
             df = pd.read_excel(file, header=4, index_col="Unnamed: 1")
-            data_frames.append(df) 
+            data_frames.append(df)
+
         else:
             status_label.config(text=f"File {file} not found.")
 
-
     if data_frames:
-        combined_df = pd.concat(data_frames, ignore_index=True)
-        print(combined_df)
-        print(masterdatalist_inp)
-        if masterdatalist_inp == 'List Master Data Gravure' or masterdatalist_inp == 'List Master Data Offset':
-            print("hapus Unnamed 7")
-            combined_df = combined_df.drop(columns="Unnamed: 7")
+        combined_df = pd.concat(data_frames, ignore_index=None)             #Menjadikan gabungan list menjadi dataframe pandas
+        combined_df["Unnamed: 2"] = combined_df["Unnamed: 2"].astype(str)   #Menyamakan tipe data pada kolom unnamed: 2 menjadi string
 
-
-        combined_df.to_excel("output_combined_data.xlsx")
-
-        sorted_combined = combined_df.sort_values(by="Unnamed: 2", ascending=True, ignore_index=True)
-        #print(sorted_combined)
-        jbaris = len(sorted_combined)
-        #sorted_combined.to_excel("output_sorted_data.xlsx")
+        combined_df.to_excel("output_combined_data.xlsx")                   #Mengeluarkan file tabel sementara dalam format xlsx
+        sorted_combined = combined_df.sort_values(by="Unnamed: 2", ascending=True, ignore_index=True)   #Mengurutkan naik data tabel berdasarkan kolom Unnamed: 2 
+        jbaris = len(sorted_combined)   #Mengukur banyaknya baris data
         for x in range(0,jbaris):
-            #print(str(sorted_combined.loc[x]))
             new_node = sorted_combined.loc[x,"Unnamed: 2"]
             new_gno = sorted_combined.loc[x,"Unnamed: 3"]
             N = sorted_combined.loc[x,"N"]
             C = sorted_combined.loc[x,"C"]
             R = sorted_combined.loc[x,"R"]
-
-            if masterdatalist_inp == 'List Registration Form':
+            #Mengosongkan kolom Hal hanya jika mengurutkan dan atau menggabungkan List Master Data
+            if masterdatalist_inp == 'List Master Data Gravure' or masterdatalist_inp == 'List Master Data Offset':
+                hal = " "
+            elif masterdatalist_inp == 'List Registration Form':
                 hal = sorted_combined.loc[x,"Unnamed: 7"]
-            
             
             dummy = sorted_combined.loc[x,"Unnamed: 8"]
             ket = sorted_combined.loc[x,"Unnamed: 9"]
-            if masterdatalist_inp == 'List Master Data Gravure' or masterdatalist_inp == 'List Master Data Offset':
-                Newrow_data=["",x+1,new_node,new_gno,N,C,R," ",dummy,ket]
-            elif masterdatalist_inp == 'List Registration Form':
-                Newrow_data=["",x+1,new_node,new_gno,N,C,R,hal,dummy,ket]
-            #print("NewRow: ",Newrow_data)    
+            Newrow_data=["",x+1,new_node,new_gno,N,C,R,hal,dummy,ket]
             ws.append(Newrow_data)
 
         baris = "B6:J"+str(6+jbaris)
@@ -701,22 +649,16 @@ def Sortir(): #Menyatukan alamat file list yang telah dihimpun ke dalam satu lis
         dir = outputlist_address+garing+nama_file
         wb.save(dir)
         messagebox.showinfo('Sortir', f'List Master Data selesai disortir')
-        #status_label.config(text="Data combined and saved to combined_data.xlsx.")
 
 def hapusMDib():
     #Update label agar terlihat kosong
     outputlist_address = "   "
     outputfilelist.configure(text=outputlist_address)
- 
     #Update variabel agar menjadi kosong sehingga bisa diisi kembali tanpa menutup program
     file_listbox.delete(0, tk.END)
-
     masterdatalist.set(None)
     outputlist_address = None
     messagebox.showinfo("Informasi","Data Input sudah dikosongkan, silahkan isi kembali.")
-
-def Buka():
-    messagebox.showinfo("Informasi","Sedang dikerjakan")
 
 ### TAB DISTRIBUSI ###
 
@@ -753,11 +695,8 @@ outputlist_label.grid(row=7, column=0)
 outputlist_btn.grid(row=7, column=2)
 outputfilelist.grid(row=8, columns=2 , sticky='NSEW')
 
-
-
 #membuat label pertanyaan jenis master data
 masterdatalist = StringVar()
-#statusart.set(0)
 masterdatalist_label = tk.Label(Distrib, text='Pilih Master Data :',font=('Arial 12 bold'))
 masterdatalist_frame = tk.Frame(Distrib)
 #membuat radiobutton status artikel
@@ -793,13 +732,12 @@ Bukalist_btn.grid(row=12, column=2)
 labelkosongDist_bar13 = tk.Label(Distrib, text = ' ') 
 labelkosongDist_bar13.grid(row=13, column=0)
 
-
 inputFileLIST_btn.configure(command=select_files)
 outputlist_btn.configure(command=output_list)
 
 hapusmasukanlist_btn.configure(command=hapusMDib)
 Sortir_btn.configure(command=Sortir)
-Bukalist_btn.configure(command=Buka)
+Bukalist_btn.configure(command=bukadib)
 
 #Membuat Judul Tab
 notebook.add(Split, text="          SPLIT          ")
