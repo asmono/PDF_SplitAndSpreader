@@ -1,0 +1,14 @@
+
+On-Going Development
+1. Loading awal lama
+2. Gunakan jendela input baru
+3. Mulai konversi ke oop
+
+
+
+  V.10-09
+1. Mengatasi gagal spread karna nodesain .0
+2. Menghilangkan penggunaan try-exception(gunakan if) dari 6
+3. Tidak mengeluarkan file output combined data
+
+
