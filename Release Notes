@@ -4,6 +4,29 @@ On-Going Development
 2. Gunakan jendela input baru
 3. Mulai konversi ke oop
 
+4. splitter algorithm 
+existing 
+read the main pdf-split n page-rename-save-read the main pdf
++ split each page directly
+- read the main pdf for n split (time spend for n split)
+
+option #1 
+read the main pdf-split n page for the whole file-read each output file-rename-save
++ split the whole page of main pdf once
++ reduce the weight code for reading the main pdf
++ shorter delaying for pdf file rename 
+- read the whole pdf output file for rename 
+
+option #2
+read the main pdf-split rename n save without read main pdf again - save 
+
+
+
+
+
+
+
+
 
 
   V.10-09
