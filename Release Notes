@@ -20,6 +20,17 @@ read the main pdf-split n page for the whole file-read each output file-rename-s
 option #2
 read the main pdf-split rename n save without read main pdf again - save 
 
+option #3 
+read the main pdf-split n page for the whole file-make a list of output-read each output file by list-rename-update n save outstand list and distribution list
++ split the whole page of main pdf once
++ reduce the weight code for reading the main pdf
++ shorter delaying for pdf file rename 
++ possible to continue if any fail during rename file
+- read one by one pdf output file for rename 
+- add more save n output excel file
+
+5. tambahkan keterangan untuk tidak menggunakan karakter "/" saat memeberi nama file
+
 
 
 
